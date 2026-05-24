@@ -18,15 +18,18 @@ The example wires several participants into one shared `AgenticEnvironment`:
 
 5. **The debate cascades** — there is no turn-taking scheduler. Every new message can cause multiple agents to infer in parallel, so the conversation fans out organically until you stop the process.
 
-```
-Narrator (BaseHuman)
-       │ sendMessage
-       ▼
-AgenticEnvironment ──broadcast──► HistoricalFigureAgent × 3
-       │                                    │
-       │                                    ▼ runInference → onModelMessage
-       └◄──────── model messages ───────────┘
-TranscriptObserver (logs narrator text)
+```mermaid
+flowchart TD
+    Narrator["Narrator (BaseHuman)"]
+    Env["AgenticEnvironment"]
+    Agents["HistoricalFigureAgent × 3"]
+    Observer["TranscriptObserver<br/>(logs narrator text)"]
+
+    Narrator -->|sendMessage| Env
+    Env -->|broadcast| Agents
+    Env --> Observer
+    Agents -->|runInference → onModelMessage| Env
+    Env -->|model messages| Agents
 ```
 
 `HistoricalFigureAgent` extends `BaseAgent` and seeds each context with a system-style user message defining the figure's name, role, and debate rules. `TranscriptObserver` extends `BaseObserver` and only formats narrator input for the console; agent lines are logged inside the agent's `onModelMessage` handler.
