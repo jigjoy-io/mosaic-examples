@@ -5,8 +5,8 @@
 	"type": "module",
 	"scripts": {
 		"build": "tsc",
-		"dev": "tsx ./anthropic/complex-reasoning.ts",
 		"inference-interception": "tsx inference-interception/index.ts",
+		"history-simulation": "tsx history-simulation/main.ts",
 		"watch": "tsc --watch",
 		"clean": "rimraf dist",
 		"format": "prettier --write \"**/*.{ts,tsx}\""

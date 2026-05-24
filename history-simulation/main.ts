@@ -6,7 +6,7 @@ import {
 	ModelContext,
 	OpenAIInferenceRunner,
 } from "@mozaik-ai/core"
-import { HistoricalFigureAgent } from "./history-simulation"
+import { HistoricalFigureAgent } from "./historical-figure-agent"
 import { TranscriptObserver } from "./transcript-observer"
 
 import "dotenv/config"
