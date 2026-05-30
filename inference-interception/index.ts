@@ -4,18 +4,21 @@ import {
 	DeveloperMessageItem,
 	Gpt54Mini,
 	ModelContext,
-	OpenAIInferenceRunner,
+	DefaultInferenceRunner,
+	OpenAIResponses,
 } from "@mozaik-ai/core"
 import "dotenv/config"
 import { PlannerAgent } from "./planner-agent"
 import { SafetyReviewerAgent } from "./safety-reviewer-agent"
 import { RuntimeObserver } from "./runtime-observer"
 
-const inferenceRunner = new OpenAIInferenceRunner()
 const functionCallRunner = new DefaultFunctionCallRunner([])
 
 const streamingModel = new Gpt54Mini()
 streamingModel.setStreaming(true)
+
+const modelRuntime = new OpenAIResponses()
+const inferenceRunner = new DefaultInferenceRunner(modelRuntime)
 
 const environment = new AgenticEnvironment()
 
@@ -37,13 +40,7 @@ reviewerContext.addContextItem(
 	),
 )
 
-const planner = new PlannerAgent(
-	inferenceRunner,
-	functionCallRunner,
-	environment,
-	plannerContext,
-	streamingModel,
-)
+const planner = new PlannerAgent(inferenceRunner, functionCallRunner, environment, plannerContext, streamingModel)
 
 const reviewer = new SafetyReviewerAgent(
 	inferenceRunner,

@@ -2,9 +2,10 @@ import {
 	AgenticEnvironment,
 	Gpt54,
 	ModelContext,
-	OpenAIInferenceRunner,
+	DefaultInferenceRunner,
 	DefaultFunctionCallRunner,
 	BaseHuman,
+	OpenAIResponses,
 } from "@mozaik-ai/core"
 import { capitalOfFranceTool } from "./capital-of-france-tool"
 import { ReactiveAgent } from "./reactive-agent"
@@ -12,7 +13,8 @@ import { TranscriptLogger } from "./transcript-logger"
 import "dotenv/config"
 
 const functionCallRunner = new DefaultFunctionCallRunner([capitalOfFranceTool])
-const inferenceRunner = new OpenAIInferenceRunner()
+const modelRuntime = new OpenAIResponses()
+const inferenceRunner = new DefaultInferenceRunner(modelRuntime)
 
 const context = ModelContext.create("pr-1")
 const model = new Gpt54()

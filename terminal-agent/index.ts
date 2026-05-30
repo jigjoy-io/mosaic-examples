@@ -4,12 +4,14 @@ import {
 	DefaultFunctionCallRunner,
 	Gpt54,
 	ModelContext,
-	OpenAIInferenceRunner,
+	DefaultInferenceRunner,
+	OpenAIResponses,
 } from "@mozaik-ai/core"
 import { TerminalAgent, terminalTools } from "./agent"
 
 const environment = new AgenticEnvironment()
-const inferenceRunner = new OpenAIInferenceRunner()
+const modelRuntime = new OpenAIResponses()
+const inferenceRunner = new DefaultInferenceRunner(modelRuntime)
 const functionCallRunner = new DefaultFunctionCallRunner(terminalTools)
 const context = ModelContext.create("terminal-agent")
 const model = new Gpt54()

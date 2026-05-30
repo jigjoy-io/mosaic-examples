@@ -4,7 +4,8 @@ import {
 	DefaultFunctionCallRunner,
 	Gpt54Mini,
 	ModelContext,
-	OpenAIInferenceRunner,
+	DefaultInferenceRunner,
+	OpenAIResponses,
 } from "@mozaik-ai/core"
 import { HistoricalFigureAgent } from "./historical-figure-agent"
 import { TranscriptObserver } from "./transcript-observer"
@@ -14,7 +15,8 @@ import "dotenv/config"
 async function main() {
 	const environment = new AgenticEnvironment()
 
-	const inferenceRunner = new OpenAIInferenceRunner()
+	const modelRuntime = new OpenAIResponses()
+	const inferenceRunner = new DefaultInferenceRunner(modelRuntime)
 	const functionCallRunner = new DefaultFunctionCallRunner([])
 	const model = new Gpt54Mini()
 
