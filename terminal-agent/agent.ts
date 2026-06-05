@@ -3,14 +3,13 @@ import {
 	AgenticEnvironment,
 	DeveloperMessageItem,
 	FunctionCallItem,
-	FunctionCallRunner,
-	InferenceRunner,
 	ModelContext,
 	Tool,
 	UserMessageItem,
 	FunctionCallOutputItem,
-	GenerativeModel,
-	BaseAgent,
+	BaseParticipant,
+	runInference,
+	executeFunctionCall
 } from "@mozaik-ai/core"
 import { Terminal } from "./terminal"
 
@@ -47,29 +46,43 @@ Tools:
 - run_command: Run a command in the terminal. You can use this tool to run any command in the terminal.
 `)
 
-export class TerminalAgent extends BaseAgent {
+export class TerminalAgent extends BaseParticipant {
 	private pendingCalls = new Set<string>()
 
 	constructor(
-		inferenceRunner: InferenceRunner,
-		functionCallRunner: FunctionCallRunner,
 		private readonly environment: AgenticEnvironment,
 		private readonly context: ModelContext,
-		private readonly model: GenerativeModel,
+		private readonly tools: Tool[],
 	) {
-		super(inferenceRunner, functionCallRunner)
+		super()
 	}
 
 	async onMessage(message: string): Promise<void> {
 		console.log("Message received: ", message)
 		this.context.addContextItem(developerMessage).addContextItem(UserMessageItem.create(message))
-		this.runInference(this.environment, this.context, this.model)
+
+
+		const inferenceParams = {
+			model: "gpt-5-4",
+			context: this.context,
+			tools: this.tools,
+			reasoningEffort: "high",
+			environment: this.environment,
+			caller: this,
+		}
+		runInference(inferenceParams)
 	}
 
 	onFunctionCall(item: FunctionCallItem): Promise<void> {
 		this.pendingCalls.add(item.callId)
 		this.context.addContextItem(item)
-		this.executeFunctionCall(this.environment, item)
+		const tool = this.tools.find(tool => tool.name === item.name)
+
+		if (!tool) {
+			throw new Error(`Tool ${item.name} not found`)
+		}
+
+		executeFunctionCall(this.environment, item, tool, this)
 		return Promise.resolve()
 	}
 
@@ -77,7 +90,15 @@ export class TerminalAgent extends BaseAgent {
 		this.context.addContextItem(item)
 		this.pendingCalls.delete(item.callId)
 		if (this.pendingCalls.size === 0) {
-			this.runInference(this.environment, this.context, this.model)
+			const inferenceParams = {
+				model: "gpt-5-4",
+				context: this.context,
+				tools: this.tools,
+				reasoningEffort: "high",
+				environment: this.environment,
+				caller: this,
+			}
+			runInference(inferenceParams)
 		}
 		return Promise.resolve()
 	}
