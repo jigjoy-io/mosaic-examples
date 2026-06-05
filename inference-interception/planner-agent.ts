@@ -1,27 +1,21 @@
 import {
 	AgenticEnvironment,
-	BaseAgent,
 	ModelContext,
 	UserMessageItem,
 	ModelMessageItem,
-	SemanticEvent,
 	Participant,
-	InferenceRunner,
-	FunctionCallRunner,
-	GenerativeModel,
+	BaseParticipant,
+	runInference,
 } from "@mozaik-ai/core"
 
-export class PlannerAgent extends BaseAgent {
+export class PlannerAgent extends BaseParticipant {
 	private inferenceAbort?: AbortController
 
 	constructor(
-		inferenceRunner: InferenceRunner,
-		functionCallRunner: FunctionCallRunner,
 		private readonly environment: AgenticEnvironment,
 		private readonly context: ModelContext,
-		private readonly model: GenerativeModel,
 	) {
-		super(inferenceRunner, functionCallRunner)
+		super()
 	}
 
 	/** Stops the in-flight planner stream; consumed by SafetyReviewerAgent on intercept. */
@@ -36,12 +30,16 @@ export class PlannerAgent extends BaseAgent {
 		this.inferenceAbort?.abort()
 		this.inferenceAbort = new AbortController()
 		// Pass signal through to InferenceRunner — streaming stops when aborted.
-		this.runInference(
-			this.environment,
-			this.context,
-			this.model,
-			this.inferenceAbort.signal,
-		)
+		
+		const inferenceParams = {
+			model: "gpt-5-4",
+			context: this.context,
+			streaming: true,
+			environment: this.environment,
+			caller: this,
+			signal: this.inferenceAbort.signal,
+		}
+		runInference(inferenceParams)
 	}
 
 	async onMessage(message: string) {
@@ -61,8 +59,4 @@ export class PlannerAgent extends BaseAgent {
 		this.startInference()
 	}
 
-	async onInternalEvent(_event: SemanticEvent<unknown>) {
-		// Planner can observe its own stream events if needed,
-		// but it does not need UI or logging logic here.
-	}
 }

@@ -1,6 +1,6 @@
-import { BaseObserver, Participant, SemanticEvent, ModelMessageItem } from "@mozaik-ai/core"
+import { Participant, SemanticEvent, ModelMessageItem, BaseParticipant } from "@mozaik-ai/core"
 
-export class RuntimeObserver extends BaseObserver {
+export class RuntimeObserver extends BaseParticipant {
 	async onExternalEvent(source: Participant, event: SemanticEvent<unknown>) {
 		// Stream/runtime events go here.
 		// This can drive UI, tracing, metrics, or debugging.
