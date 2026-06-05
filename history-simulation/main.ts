@@ -1,11 +1,8 @@
 import {
 	AgenticEnvironment,
-	BaseHuman,
-	DefaultFunctionCallRunner,
-	Gpt54Mini,
+	BaseParticipant,
 	ModelContext,
-	DefaultInferenceRunner,
-	OpenAIResponses,
+	sendMessage
 } from "@mozaik-ai/core"
 import { HistoricalFigureAgent } from "./historical-figure-agent"
 import { TranscriptObserver } from "./transcript-observer"
@@ -15,42 +12,28 @@ import "dotenv/config"
 async function main() {
 	const environment = new AgenticEnvironment()
 
-	const modelRuntime = new OpenAIResponses()
-	const inferenceRunner = new DefaultInferenceRunner(modelRuntime)
-	const functionCallRunner = new DefaultFunctionCallRunner([])
-	const model = new Gpt54Mini()
-
-	const human = new BaseHuman()
+	const human = new BaseParticipant()
 	const observer = new TranscriptObserver()
 
 	const caesar = new HistoricalFigureAgent(
 		"Julius Caesar",
 		"You are Caesar, a victorious general returning from Gaul. You believe your enemies in the Senate want to destroy your career and dignity.",
 		environment,
-		ModelContext.create("caesar-context"),
-		model,
-		inferenceRunner,
-		functionCallRunner,
+		ModelContext.create("caesar-context")
 	)
 
 	const pompey = new HistoricalFigureAgent(
 		"Pompey Magnus",
 		"You are Pompey, once Caesar's ally, now aligned with the Senate. You want order, legality, and your own prestige preserved.",
 		environment,
-		ModelContext.create("pompey-context"),
-		model,
-		inferenceRunner,
-		functionCallRunner,
+		ModelContext.create("pompey-context")
 	)
 
 	const cato = new HistoricalFigureAgent(
 		"Cato the Younger",
 		"You are Cato, a strict defender of the Roman Republic. You see Caesar as a threat to liberty and law.",
 		environment,
-		ModelContext.create("cato-context"),
-		model,
-		inferenceRunner,
-		functionCallRunner,
+		ModelContext.create("cato-context")
 	)
 
 	human.join(environment)
@@ -59,9 +42,7 @@ async function main() {
 	pompey.join(environment)
 	cato.join(environment)
 
-	environment.start()
-
-	human.sendMessage(
+	sendMessage(
 		environment,
 		`
   Historical scenario:
@@ -71,6 +52,7 @@ async function main() {
   Begin the simulation:
   Each character should argue what Rome should do next.
   `,
+	human,
 	)
 }
 

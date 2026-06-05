@@ -1,6 +1,6 @@
-import { BaseObserver, ModelMessageItem, Participant } from "@mozaik-ai/core"
+import { BaseParticipant, ModelMessageItem, Participant } from "@mozaik-ai/core"
 
-export class TranscriptObserver extends BaseObserver {
+export class TranscriptObserver extends BaseParticipant {
 	async onMessage(message: string): Promise<void> {
 		console.log(`\nNarrator/User: ${message}`)
 	}

@@ -1,29 +1,22 @@
 import {
 	AgenticEnvironment,
-	BaseAgent,
+	BaseParticipant,
 	ModelContext,
 	UserMessageItem,
 	ModelMessageItem,
-	FunctionCallItem,
-	FunctionCallOutputItem,
 	ReasoningItem,
-	type InferenceRunner,
-	type FunctionCallRunner,
-	type GenerativeModel,
 	Participant,
+	runInference,
 } from "@mozaik-ai/core"
 
-export class HistoricalFigureAgent extends BaseAgent {
+export class HistoricalFigureAgent extends BaseParticipant {
 	constructor(
 		private readonly figureName: string,
 		private readonly rolePrompt: string,
 		private readonly environment: AgenticEnvironment,
 		private readonly context: ModelContext,
-		private readonly model: GenerativeModel,
-		inferenceRunner: InferenceRunner,
-		functionCallRunner: FunctionCallRunner,
 	) {
-		super(inferenceRunner, functionCallRunner)
+		super()
 
 		this.context.addContextItem(
 			UserMessageItem.create(`
@@ -44,23 +37,26 @@ export class HistoricalFigureAgent extends BaseAgent {
 
 	override onMessage(message: string) {
 		this.context.addContextItem(UserMessageItem.create(message))
-		this.runInference(this.environment, this.context, this.model)
+
+		const inferenceParams = {
+			model: "gpt-5-4",
+			context: this.context,
+			environment: this.environment,
+			caller: this,
+		}
+		runInference(inferenceParams)
 	}
 
 	override onExternalModelMessage(source: Participant, item: ModelMessageItem) {
 		this.context.addContextItem(UserMessageItem.create(`Another participant said: ${item.content}`))
 
-		this.runInference(this.environment, this.context, this.model)
-	}
-
-	override onFunctionCall(item: FunctionCallItem) {
-		this.context.addContextItem(item)
-		this.executeFunctionCall(this.environment, item)
-	}
-
-	override onFunctionCallOutput(item: FunctionCallOutputItem) {
-		this.context.addContextItem(item)
-		this.runInference(this.environment, this.context, this.model)
+		const inferenceParams = {
+			model: "gpt-5-4",
+			context: this.context,
+			environment: this.environment,
+			caller: this,
+		}
+		runInference(inferenceParams)
 	}
 
 	override onReasoning(item: ReasoningItem) {
