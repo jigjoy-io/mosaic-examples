@@ -3,23 +3,21 @@ import {
 	FunctionCallItem,
 	AgenticEnvironment,
 	ModelContext,
-	GenerativeModel,
-	InferenceRunner,
-	FunctionCallRunner,
 	FunctionCallOutputItem,
 	DeveloperMessageItem,
-	BaseAgent,
+	Tool,
+	BaseParticipant,
+	runInference,
+	executeFunctionCall,
 } from "@mozaik-ai/core"
 
-export class ReactiveAgent extends BaseAgent {
+export class ReactiveAgent extends BaseParticipant {
 	constructor(
-		inferenceRunner: InferenceRunner,
-		functionCallRunner: FunctionCallRunner,
 		private readonly environment: AgenticEnvironment,
 		private readonly context: ModelContext,
-		private readonly model: GenerativeModel,
+		private readonly capitalOfFranceTool: Tool,
 	) {
-		super(inferenceRunner, functionCallRunner)
+		super()
 	}
 
 	onMessage(message: string) {
@@ -29,16 +27,30 @@ export class ReactiveAgent extends BaseAgent {
 			),
 		)
 		this.context.addContextItem(UserMessageItem.create(message))
-		this.runInference(this.environment, this.context, this.model)
+		const inferenceParams = {
+			model: "gpt-5-4",
+			tools: [this.capitalOfFranceTool],
+			context: this.context,
+			environment: this.environment,
+			caller: this,
+		}
+		runInference(inferenceParams)
 	}
 
 	onFunctionCall(item: FunctionCallItem) {
 		this.context.addContextItem(item)
-		this.executeFunctionCall(this.environment, item)
+		executeFunctionCall(this.environment, item, this.capitalOfFranceTool, this)
 	}
 
 	onFunctionCallOutput(item: FunctionCallOutputItem) {
 		this.context.addContextItem(item)
-		this.runInference(this.environment, this.context, this.model)
+
+		const inferenceParams = {
+			model: "gpt-5-4",
+			context: this.context,
+			environment: this.environment,
+			caller: this,
+		}
+		runInference(inferenceParams)
 	}
 }
