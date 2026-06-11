@@ -6,6 +6,8 @@ import {
 	Participant,
 	BaseParticipant,
 	runInference,
+	InferenceParams,
+	ModelName,
 } from "@mozaik-ai/core"
 
 export class PlannerAgent extends BaseParticipant {
@@ -30,9 +32,9 @@ export class PlannerAgent extends BaseParticipant {
 		this.inferenceAbort?.abort()
 		this.inferenceAbort = new AbortController()
 		// Pass signal through to InferenceRunner — streaming stops when aborted.
-		
-		const inferenceParams = {
-			model: "gpt-5-4",
+
+		const inferenceParams: InferenceParams<ModelName> = {
+			model: "gpt-5.4",
 			context: this.context,
 			streaming: true,
 			environment: this.environment,
@@ -58,5 +60,4 @@ export class PlannerAgent extends BaseParticipant {
 		// Optionally re-run with the new information.
 		this.startInference()
 	}
-
 }

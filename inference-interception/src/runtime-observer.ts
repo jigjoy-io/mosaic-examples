@@ -10,6 +10,6 @@ export class RuntimeObserver extends BaseParticipant {
 	async onExternalModelMessage(source: Participant, item: ModelMessageItem) {
 		// Produced context items go here.
 		// This is not mixed with token-level streaming.
-		console.log("[model_message]", source.constructor.name, item.toJSON())
+		console.log("[model_message]", source.constructor.name, item.content.text)
 	}
 }

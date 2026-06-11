@@ -9,6 +9,8 @@ import {
 	BaseParticipant,
 	runInference,
 	executeFunctionCall,
+	InferenceParams,
+	ModelName,
 } from "@mozaik-ai/core"
 
 export class ReactiveAgent extends BaseParticipant {
@@ -27,8 +29,8 @@ export class ReactiveAgent extends BaseParticipant {
 			),
 		)
 		this.context.addContextItem(UserMessageItem.create(message))
-		const inferenceParams = {
-			model: "gpt-5-4",
+		const inferenceParams: InferenceParams<ModelName> = {
+			model: "gpt-5.4",
 			tools: [this.capitalOfFranceTool],
 			context: this.context,
 			environment: this.environment,
@@ -45,8 +47,8 @@ export class ReactiveAgent extends BaseParticipant {
 	onFunctionCallOutput(item: FunctionCallOutputItem) {
 		this.context.addContextItem(item)
 
-		const inferenceParams = {
-			model: "gpt-5-4",
+		const inferenceParams: InferenceParams<ModelName> = {
+			model: "gpt-5.4",
 			context: this.context,
 			environment: this.environment,
 			caller: this,

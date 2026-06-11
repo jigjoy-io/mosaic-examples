@@ -7,6 +7,8 @@ import {
 	SemanticEvent,
 	Participant,
 	runInference,
+	ModelName,
+	InferenceParams,
 } from "@mozaik-ai/core"
 import { PlannerAgent } from "./planner-agent"
 
@@ -16,7 +18,7 @@ export class SafetyReviewerAgent extends BaseParticipant {
 
 	constructor(
 		private readonly environment: AgenticEnvironment,
-		private readonly context: ModelContext
+		private readonly context: ModelContext,
 	) {
 		super()
 	}
@@ -45,12 +47,12 @@ export class SafetyReviewerAgent extends BaseParticipant {
 
 				// The reviewer starts its own inference while the planner's run
 				// may still be producing stream events.
-				const inferenceParams = {
-					model: "gpt-5-4",
+				const inferenceParams: InferenceParams<ModelName> = {
+					model: "gpt-5.4",
 					context: this.context,
 					streaming: true,
 					environment: this.environment,
-					caller: this
+					caller: this,
 				}
 				runInference(inferenceParams)
 			}

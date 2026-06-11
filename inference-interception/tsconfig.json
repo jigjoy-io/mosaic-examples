@@ -17,6 +17,12 @@
 		"allowImportingTsExtensions": false,
 		"noEmit": false
 	},
-	"include": ["*.ts"],
+	"include": [
+		"*.ts",
+		"src/index.ts",
+		"src/planner-agent.ts",
+		"src/runtime-observer.ts",
+		"src/safety-reviewer-agent.ts"
+	],
 	"exclude": ["node_modules", "dist"]
 }

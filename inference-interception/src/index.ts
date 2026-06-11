@@ -1,8 +1,4 @@
-import {
-	AgenticEnvironment,
-	DeveloperMessageItem,
-	ModelContext,
-} from "@mozaik-ai/core"
+import { AgenticEnvironment, DeveloperMessageItem, ModelContext } from "@mozaik-ai/core"
 import "dotenv/config"
 import { PlannerAgent } from "./planner-agent"
 import { SafetyReviewerAgent } from "./safety-reviewer-agent"
@@ -30,10 +26,7 @@ reviewerContext.addContextItem(
 
 const planner = new PlannerAgent(environment, plannerContext)
 
-const reviewer = new SafetyReviewerAgent(
-	environment,
-	reviewerContext,
-)
+const reviewer = new SafetyReviewerAgent(environment, reviewerContext)
 
 const observer = new RuntimeObserver()
 
