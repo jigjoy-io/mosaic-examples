@@ -10,6 +10,8 @@ import {
 	BaseParticipant,
 	runInference,
 	executeFunctionCall,
+	InferenceParams,
+	ModelName,
 } from "@mozaik-ai/core"
 import { Terminal } from "./terminal"
 
@@ -61,7 +63,7 @@ export class TerminalAgent extends BaseParticipant {
 		console.log("Message received: ", message)
 		this.context.addContextItem(developerMessage).addContextItem(UserMessageItem.create(message))
 
-		const inferenceParams = {
+		const inferenceParams: InferenceParams<ModelName> = {
 			model: "gpt-5.4",
 			context: this.context,
 			tools: this.tools,
@@ -89,8 +91,8 @@ export class TerminalAgent extends BaseParticipant {
 		this.context.addContextItem(item)
 		this.pendingCalls.delete(item.callId)
 		if (this.pendingCalls.size === 0) {
-			const inferenceParams = {
-				model: "gpt-5-4",
+			const inferenceParams: InferenceParams<ModelName> = {
+				model: "gpt-5.4",
 				context: this.context,
 				tools: this.tools,
 				reasoningEffort: "high",

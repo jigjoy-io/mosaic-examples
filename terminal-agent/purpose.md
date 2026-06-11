@@ -2,293 +2,219 @@
 
 ## Overview
 
-This repository is a small TypeScript workspace of runnable examples built with `@mozaik-ai/core`. Its purpose is to demonstrate how to build AI agents that operate inside a shared environment, receive structured conversation items, trigger model inference, call tools, and react to the results.
+This project is a small TypeScript/Node.js example of a **terminal-capable AI agent** built with `@mozaik-ai/core`. Its purpose is to demonstrate how to connect a language model to a real executable tool—in this case, a shell command runner—so the agent can inspect a directory, run commands, collect structured results, and use those results to complete a task.
 
-The code currently centers on two example projects:
+Rather than being a general-purpose application with a user interface, this repository is best understood as a focused example or prototype showing how to build an **agentic workflow** around:
 
-- `agentic-environment/` — a minimal example of an event-driven agent environment with participants, shared model context, inference, and a simple function tool.
-- `terminal-agent/` — a more practical example of a tool-using agent that can execute shell commands and use the results to complete a task.
+- a message-driven environment,
+- a model context that stores conversation state,
+- a tool definition the model can call,
+- tool execution against the local terminal, and
+- a loop that continues reasoning after tool results are returned.
 
-Taken together, the repository serves as an experimentation and learning space for building **agentic workflows** rather than a single end-user application.
+In practical terms, this project shows how an AI agent can behave like a lightweight terminal operator.
 
-## Primary Purpose
+## Primary Goal
 
-The main goal of the project is to show how Mozaik's core primitives can be composed into working agents. Instead of treating an LLM interaction as a single prompt/response exchange, these examples model the process as a small runtime with:
+The main goal of the project is to provide a minimal but realistic pattern for building an AI agent that can:
 
-- an **environment** that coordinates participants
-- **input sources** that emit structured items
-- **participants/agents** that observe and react to those items
-- a **model context** that accumulates conversation state
-- an **inference runner** that invokes the model
-- a **function-call runner** that executes tools emitted by the model
+1. receive a natural-language request,
+2. decide which terminal commands to run,
+3. execute those commands through a defined tool interface,
+4. capture `stdout`, `stderr`, and exit codes in a structured way,
+5. feed the results back into the model context, and
+6. continue until the task is complete.
 
-This makes the repository useful for understanding how to build agents that can reason, use tools, and continue reasoning after tool execution.
+The example task embedded in the project is self-referential: the agent is asked to analyze the current directory and write a description of the project into `purpose.md`. That makes the repository both the subject of analysis and the execution environment.
 
-## Technologies Used
+## What the Project Demonstrates
 
-- **Language:** TypeScript
-- **Runtime:** Node.js
-- **Module system:** ES modules (`"type": "module"`)
-- **Core dependency:** `@mozaik-ai/core`
-- **Environment loading:** `dotenv`
-- **Schema tooling:** `zod`
-- **Build tooling:** TypeScript compiler (`tsc`)
-- **Dev runner:** `tsx`
-- **Formatting:** Prettier
+This repository demonstrates several important agent-design ideas:
 
-The project targets modern JavaScript (`ES2022`) and uses strict TypeScript settings.
+### 1. Tool-using AI agents
+The model is not limited to producing text. It is given access to a `run_command` tool that lets it interact with the filesystem and shell.
 
-## Repository Layout
+### 2. Structured tool interfaces
+The terminal capability is exposed as a typed function tool with a schema requiring:
 
-### Root
+- `command`: the shell command to run
+- `cwd`: the working directory in which to run it
 
-Important root files include:
+This makes tool use explicit, inspectable, and programmatic.
 
-- `package.json` — project metadata, dependencies, and scripts
-- `README.md` — top-level explanation of the examples in the repository
-- `tsconfig.json` — TypeScript compiler configuration
-- `.env` — environment variables such as API keys
-- `purpose.md` — this project description file
+### 3. Message-driven orchestration
+The project uses Mozaik primitives such as `AgenticEnvironment`, `ModelContext`, `BaseParticipant`, `runInference`, and `executeFunctionCall` to model the agent as a participant in an event-driven system.
 
-The root `README.md` describes the repository accurately as a set of Mozaik examples. The root scripts include `build`, `watch`, `clean`, and `format`. One script, `dev`, points to `./anthropic/complex-reasoning.ts`, which is not present in this directory, suggesting the repository is still evolving or has remnants from earlier experiments.
+### 4. Multi-step reasoning loop
+The agent does not just call the model once. It supports a cycle of:
 
-## Example 1: `agentic-environment/`
+- user message,
+- model inference,
+- function call emission,
+- tool execution,
+- function output injection,
+- another inference pass if more reasoning is needed.
 
-This directory contains the smallest conceptual example in the repository. Its purpose is to illustrate the core event-driven pattern used by Mozaik-based agents.
+### 5. Terminal automation with typed results
+Commands are executed through Node's `child_process.spawn`, and the result is normalized into a reusable `CommandResult` shape.
 
-### What it demonstrates
+## High-Level Architecture
 
-- streaming conversation items into an environment
-- registering multiple participants
-- storing conversation state in a shared `ModelContext`
-- running inference when a user message appears
-- executing a tool when the model emits a function call
-- logging the transcript for visibility and debugging
+The codebase is intentionally compact. Most of the important logic lives in four source files under `src/`.
 
-### Main files
+### `src/index.ts`
+This is the composition root and demo entry point.
 
-#### `agentic-environment/index.ts`
-This is the composition root for the example. It creates and wires together:
+It:
+- creates an `AgenticEnvironment`,
+- creates a shared `ModelContext`,
+- instantiates the `TerminalAgent`,
+- creates a simple human participant,
+- joins both participants to the environment,
+- sends an initial user message asking the agent to analyze the directory and write `purpose.md`.
 
-- an `AgenticEnvironment`
-- an `OpenAIInferenceRunner`
-- a `DefaultFunctionCallRunner`
-- a `ModelContext`
-- a `Gpt54` model
-- a sample participant (`MyParticipant`)
-- a reactive agent (`ReactiveAgent`)
-- a transcript logger (`TranscriptLogger`)
+This file shows how the example is intended to be run: as an autonomous interaction inside the Mozaik environment.
 
-It starts the environment and begins streaming input into it.
+### `src/agent.ts`
+This is the central file in the project.
 
-#### `agentic-environment/input-item-source.ts`
-Defines an input source that emits two structured messages:
+It contains two major pieces:
 
-1. a developer message: `You are a helpful assistant.`
-2. a user message asking for the capital of France
+#### The terminal tool definition
+A tool named `run_command` is defined and exported. It is described to the model as a function that runs a terminal command. The tool schema requires `command` and `cwd`, and its implementation delegates actual execution to the `Terminal` class.
 
-This shows that prompts are treated as typed input items instead of plain strings.
+#### The `TerminalAgent` class
+`TerminalAgent` extends `BaseParticipant` and implements the core agent loop.
 
-#### `agentic-environment/reactive-agent.ts`
-Defines the key behavior of the example. The `ReactiveAgent` extends `BaseAgentParticipant` and reacts to incoming items as follows:
+Its behavior is roughly:
+- on user message: add a developer instruction and the user message to the context, then trigger model inference;
+- on function call: track the call, add it to context, find the matching tool, and execute it;
+- on function call output: add the output to context, clear the pending call, and, once all pending calls are complete, trigger inference again.
 
-- if the item comes from itself, it ignores it
-- otherwise it adds the item to shared context
-- if the item is a `UserMessageItem`, it triggers inference
-- if the item is a `FunctionCallItem`, it executes the requested tool
+This file is the clearest expression of the project's purpose: building a working AI agent that can reason, use tools, observe tool outputs, and continue reasoning.
 
-This file is the clearest example of the repository's intended architecture: observe context, update state, then decide whether to infer or execute.
+### `src/terminal.ts`
+This file implements the actual terminal integration.
 
-#### `agentic-environment/capital-of-france-tool.ts`
-Defines a single function tool named `get_capital_of_france`. The tool takes no parameters and returns:
+The `Terminal` class exposes `runCommand(command, cwd, contextMessage?)`, which:
+- starts a child process with `spawn`,
+- executes using `shell: true`,
+- collects standard output,
+- collects standard error,
+- listens for process errors,
+- waits for process completion,
+- returns a structured result indicating success and exit code.
 
-```json
-{ "capital": "Paris" }
-```
+This is the system boundary where model-directed actions become real operating-system commands.
 
-Its role is educational rather than functional. It demonstrates how to define a tool with metadata, a parameter schema, and an async implementation.
+### `src/command-result.ts`
+This file defines the `CommandResult` interface:
+- `success: boolean`
+- `stdout: string`
+- `stderr: string`
+- `exitCode: number`
 
-#### `agentic-environment/participant.ts`
-Defines `MyParticipant`, a minimal participant that logs all received context items. It helps show how additional observers can be added to the environment.
+Its purpose is to make command execution results predictable and machine-readable.
 
-#### `agentic-environment/transcript-logger.ts`
-Defines a passive participant that logs every context item as JSON. This is useful for understanding the internal flow of the environment and for debugging the behavior of agents and tools.
+## Developer Prompt Built Into the Agent
 
-### Why this example matters
+The agent includes an internal developer instruction telling the model:
 
-This example is the conceptual foundation of the repository. It strips the system down to the minimum pieces needed to understand:
+- it is a terminal agent,
+- it can run commands in the terminal,
+- it should use those commands to help with the user's request,
+- it should not ask the user questions,
+- it should just run commands and return the result.
 
-- how messages enter the system
-- how context is accumulated
-- how inference is triggered
-- how function calls are executed
-- how multiple participants can coexist in the same environment
+This is important because it shapes the model's behavior toward direct execution and reduces conversational hesitation. In other words, the repository is designed to showcase **action-oriented** agent behavior rather than chat-oriented interaction.
 
-## Example 2: `terminal-agent/`
+## Runtime Flow
 
-This directory contains the more applied example in the repository. Its purpose is to show how an LLM-driven agent can be given a real tool for interacting with the operating system.
+When the project runs, the expected flow is:
 
-### What it demonstrates
+1. `src/index.ts` sends a human request into the environment.
+2. `TerminalAgent` receives the message.
+3. The agent adds the developer instruction and user request to the `ModelContext`.
+4. The agent calls `runInference(...)` with the configured model and available tools.
+5. If the model emits a `FunctionCallItem`, the agent executes the named tool.
+6. The `run_command` tool calls `Terminal.runCommand(...)`.
+7. The terminal returns a `CommandResult` containing `stdout`, `stderr`, success state, and exit code.
+8. That result is fed back into the environment as a `FunctionCallOutputItem`.
+9. Once pending tool calls are resolved, the agent triggers another inference round.
+10. The loop continues until the model produces a final response or finishes the task.
 
-- exposing a terminal command runner as a model tool
-- returning structured command output (`stdout`, `stderr`, `exitCode`)
-- performing multi-step reasoning with tool calls
-- feeding tool results back into context so the model can continue
-- using an AI agent to inspect and describe a repository
+This makes the project a concrete example of a tool-augmented reasoning loop.
 
-### Main files
+## Technology Stack
 
-#### `terminal-agent/terminal.ts`
-Implements the `Terminal` class. Its `runCommand` method:
+### Language and runtime
+- **TypeScript**
+- **Node.js**
+- **ES modules** (`"type": "module"`)
 
-- spawns a child process using Node's `child_process.spawn`
-- runs the provided command in a specified working directory
-- captures `stdout`
-- captures `stderr`
-- captures the exit code
-- returns a typed `CommandResult`
+### Core dependency
+- **`@mozaik-ai/core`** — provides the agent environment, participants, model context, inference helpers, and tool-execution helpers.
 
-This is the operational core of the terminal-agent example.
+### Supporting dependency
+- **`dotenv`** — loads environment variables, likely for model/provider credentials.
 
-#### `terminal-agent/command-result.ts`
-Defines the structure returned by terminal commands:
+### Development tools
+- **`tsx`** — runs TypeScript entry points directly in development.
+- **`typescript`** — compiles the project.
+- **`rimraf`** — cleans build output.
+- **`@types/node`** — Node.js type definitions.
 
-- `success`
-- `stdout`
-- `stderr`
-- `exitCode`
+## Scripts and Build Setup
 
-This gives tool execution a consistent, machine-readable result format.
+The `package.json` scripts show that this is a simple runnable example:
 
-#### `terminal-agent/agent.ts`
-This file contains the main terminal-agent logic and is the most important file in this example.
+- `npm start` — runs `tsx src/index.ts`
+- `npm run build` — compiles with `tsc`
+- `npm run watch` — watches with the TypeScript compiler
+- `npm run clean` — removes `dist`
 
-It defines:
+The TypeScript configuration targets modern JavaScript (`ES2022`) and uses strict type checking. Output is configured for `dist/`, although the project is small enough that development is likely intended to happen mainly through `tsx`.
 
-##### 1. The tool surface
-A `run_command` tool is exposed to the model. It accepts:
+## Intended Use Cases
 
-- `command` — the shell command to execute
-- `cwd` — the working directory where the command should run
+This project appears intended for:
 
-The tool implementation delegates to the `Terminal` class.
+- experimenting with Mozaik agent primitives,
+- learning how to wire an LLM to executable tools,
+- building repository-inspection or automation agents,
+- prototyping terminal-driven agent workflows,
+- demonstrating tool invocation and result handling in a compact codebase.
 
-##### 2. The developer instruction
-The file includes a built-in developer message instructing the model that it is a terminal agent, that it may run commands, and that it should not ask the user questions.
+It is especially useful as a teaching or reference project because the code is small, direct, and centered on one concrete capability.
 
-##### 3. The agent loop
-`TerminalAgent` extends `BaseAgentParticipant` and implements a more complete tool-use cycle than the smaller example. It:
+## Strengths of the Design
 
-- adds context items to `ModelContext`
-- injects the developer message when a user message arrives
-- triggers inference on user input
-- executes tool calls when `FunctionCallItem`s appear
-- tracks pending function calls in a `Set`
-- runs inference again once all tool outputs have been received
+Some notable strengths of this project:
 
-This demonstrates the common agent pattern of:
+- **Minimal surface area:** only a few source files are needed to demonstrate the full loop.
+- **Clear separation of concerns:** agent orchestration, terminal execution, and result typing are split cleanly.
+- **Practical example:** the tool does something real and useful instead of returning mock data.
+- **Structured outputs:** command results are normalized instead of being loosely handled.
+- **Reusable pattern:** the same architecture could be extended with more tools beyond terminal access.
 
-1. receive a user request
-2. run model inference
-3. let the model emit tool calls
-4. execute those tools
-5. return outputs into context
-6. continue reasoning until the task is complete
+## Important Caveats
 
-##### 4. An input source
-The file also defines `TerminalAgentInputSource`, which can emit a single user instruction.
+The project is intentionally powerful, which also means it has important limitations and risks.
 
-#### `terminal-agent/index.ts`
-This is the entry point that wires the example together. It creates:
+### Arbitrary command execution
+The `run_command` tool can execute arbitrary shell commands in a provided working directory. That is useful for automation, but it also means the project should only be run in trusted or controlled environments.
 
-- an `AgenticEnvironment`
-- an `OpenAIInferenceRunner`
-- a `DefaultFunctionCallRunner`
-- a `ModelContext`
-- a `Gpt54` model configured with the terminal tool
-- a human participant
-- a terminal agent participant
+### Shell execution details
+The implementation uses `spawn(..., { shell: true })`, which increases flexibility but also increases the need for care around command construction and safety.
 
-It then starts the environment and streams the human input into it.
+### Limited safety controls in this example
+This repository is an example implementation, not a hardened sandbox. It does not appear to impose strict allowlists, path restrictions, or permission boundaries on terminal usage.
 
-#### `terminal-agent/human.ts`
-Defines `HumanInputSource`, which emits the prompt:
+### Single-tool focus
+The project is intentionally narrow. It focuses on terminal access rather than providing a broad tool ecosystem, persistence layer, user interface, or production guardrails.
 
-> Analyze this directory and write a detailed description of the project in a file called purpose.md.
+## Overall Purpose Summary
 
-That means the example is set up to demonstrate a self-referential workflow: a terminal-capable agent is asked to inspect its own repository and document it.
+In summary, this repository exists to show how to build a **terminal-enabled AI agent** with Mozaik core primitives. It is a concise example of an agent that can receive instructions, call a shell-command tool, observe structured outputs, and continue reasoning based on those outputs.
 
-#### `terminal-agent/README.md`
-Explains the terminal-agent example at a high level and describes it as a small project that lets an AI act as a terminal operator.
-
-One notable detail is that this README refers to `src/index.ts` and `src/terminal.ts`, while the actual files live directly under `terminal-agent/`. That suggests the documentation was adapted from an earlier layout and not fully updated.
-
-### Why this example matters
-
-This example moves beyond a toy function call and shows how to connect LLM reasoning to real system actions. It is the repository's clearest demonstration of an automation-oriented AI agent.
-
-## Shared Architectural Pattern
-
-Both examples follow the same broad design:
-
-1. **Input sources** emit structured conversation items.
-2. **Participants** in the environment receive those items.
-3. **Agents** add relevant items to model context.
-4. **Inference** is triggered when the right type of item arrives.
-5. **Function/tool calls** produced by the model are executed.
-6. **Function outputs** are returned to the environment.
-7. The agent may **run inference again** using the new tool output.
-
-This pattern is the real subject of the repository. The examples are less about their specific tasks and more about showing how to build reactive, tool-using agents on top of a reusable runtime.
-
-## Intended Audience
-
-This repository appears to be aimed at developers who want to:
-
-- learn the basic programming model of `@mozaik-ai/core`
-- build custom participants and agents
-- add tools that a model can invoke
-- experiment with agent loops that combine inference and side effects
-- prototype AI automation workflows in TypeScript
-
-It is especially useful as reference code for developers exploring agentic systems rather than as a polished production package.
-
-## Operational Requirements
-
-To run the examples successfully, the project expects:
-
-- Node.js 18+
-- installed npm dependencies
-- an OpenAI API key in `.env` for examples using `OpenAIInferenceRunner`
-
-Typical commands are:
-
-```bash
-npm install
-npx tsx agentic-environment/index.ts
-npx tsx terminal-agent/index.ts
-npm run build
-```
-
-## Notable Observations
-
-A few details suggest the repository is experimental and still being actively adjusted:
-
-- the root `dev` script references a file that is not present
-- the terminal-agent README uses outdated `src/...` paths
-- the repository contains a `dist/` directory with additional compiled artifacts not mirrored by the visible source layout in this directory snapshot
-- the examples themselves are small and focused, favoring clarity over production hardening
-
-These are normal signs of a sandbox or examples repository and do not obscure its purpose.
-
-## Overall Description
-
-In summary, this project is an **examples repository for Mozaik-based agent development**. Its purpose is to demonstrate how to create agents that:
-
-- live inside a shared event-driven environment
-- accumulate structured context over time
-- invoke LLM inference when appropriate
-- expose typed tools to the model
-- execute those tools and feed the results back into the reasoning loop
-
-The `agentic-environment` example teaches the core runtime model in a minimal form, while the `terminal-agent` example shows how the same pattern can power a more practical automation agent capable of exploring and operating on a filesystem through terminal commands.
+Its real value is as a reference architecture for **tool-augmented AI automation**: small enough to understand quickly, but complete enough to demonstrate the full loop from prompt to action to result-driven follow-up.

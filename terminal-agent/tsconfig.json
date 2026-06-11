@@ -17,6 +17,6 @@
 		"allowImportingTsExtensions": false,
 		"noEmit": false
 	},
-	"include": ["*.ts"],
+	"include": ["*.ts", "src/index.ts", "src/command-result.ts", "src/agent.ts", "src/terminal.ts"],
 	"exclude": ["node_modules", "dist"]
 }
