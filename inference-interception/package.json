@@ -1,0 +1,22 @@
+{
+	"name": "inference-interception",
+	"version": "1.0.0",
+	"description": "Two streaming agents plus an observer; a safety reviewer intercepts the planner's stream in real time",
+	"type": "module",
+	"scripts": {
+		"start": "tsx index.ts",
+		"build": "tsc",
+		"watch": "tsc --watch",
+		"clean": "rimraf dist"
+	},
+	"dependencies": {
+		"@mozaik-ai/core": "^3.13.0",
+		"dotenv": "^17.2.3"
+	},
+	"devDependencies": {
+		"@types/node": "^20.0.0",
+		"rimraf": "^5.0.5",
+		"tsx": "^4.21.0",
+		"typescript": "^5.3.3"
+	}
+}

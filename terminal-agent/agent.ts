@@ -9,7 +9,7 @@ import {
 	FunctionCallOutputItem,
 	BaseParticipant,
 	runInference,
-	executeFunctionCall
+	executeFunctionCall,
 } from "@mozaik-ai/core"
 import { Terminal } from "./terminal"
 
@@ -61,9 +61,8 @@ export class TerminalAgent extends BaseParticipant {
 		console.log("Message received: ", message)
 		this.context.addContextItem(developerMessage).addContextItem(UserMessageItem.create(message))
 
-
 		const inferenceParams = {
-			model: "gpt-5-4",
+			model: "gpt-5.4",
 			context: this.context,
 			tools: this.tools,
 			reasoningEffort: "high",
@@ -76,7 +75,7 @@ export class TerminalAgent extends BaseParticipant {
 	onFunctionCall(item: FunctionCallItem): Promise<void> {
 		this.pendingCalls.add(item.callId)
 		this.context.addContextItem(item)
-		const tool = this.tools.find(tool => tool.name === item.name)
+		const tool = this.tools.find((tool) => tool.name === item.name)
 
 		if (!tool) {
 			throw new Error(`Tool ${item.name} not found`)
