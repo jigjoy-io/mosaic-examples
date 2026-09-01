@@ -1,22 +1,21 @@
 {
-	"name": "wrong-asnwer",
+	"name": "wrong-answer",
 	"version": "1.0.0",
 	"description": "A reactive agent with a tool, logging the transcript while answering a simple question",
 	"type": "module",
+	"private": true,
 	"scripts": {
-		"start": "tsx index.ts",
-		"build": "tsc",
-		"watch": "tsc --watch",
-		"clean": "rimraf dist"
+		"start": "tsx src/main.ts"
 	},
+	"author": "",
+	"license": "ISC",
 	"dependencies": {
-		"@mozaik-ai/core": "^3.13.1",
-		"dotenv": "^17.2.3"
+		"@mozaik-ai/core": "^4.0.0-beta.5",
+		"dotenv": "^17.4.2"
 	},
 	"devDependencies": {
-		"@types/node": "^20.0.0",
-		"rimraf": "^5.0.5",
-		"tsx": "^4.21.0",
-		"typescript": "^5.3.3"
+		"@types/node": "^26.4.0",
+		"tsx": "^4.23.13",
+		"typescript": "^7.0.2"
 	}
 }

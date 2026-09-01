@@ -1,50 +1,18 @@
-import {
-	AgenticEnvironment,
-	BaseParticipant,
-	ModelContext,
-	sendMessage
-} from "@mozaik-ai/core"
-import { HistoricalFigureAgent } from "./historical-figure-agent"
-import { TranscriptObserver } from "./transcript-observer"
-
 import "dotenv/config"
+import { caesar, cato, pompey } from "./agent"
+import { EnvironmentState, initializeRuntime, join, sendMessage } from "./runtime"
+import { narrator, observer } from "./user"
 
-async function main() {
-	const environment = new AgenticEnvironment()
+initializeRuntime({ state: new EnvironmentState() })
 
-	const human = new BaseParticipant()
-	const observer = new TranscriptObserver()
+join(narrator)
+join(observer)
+join(caesar)
+join(pompey)
+join(cato)
 
-	const caesar = new HistoricalFigureAgent(
-		"Julius Caesar",
-		"You are Caesar, a victorious general returning from Gaul. You believe your enemies in the Senate want to destroy your career and dignity.",
-		environment,
-		ModelContext.create("caesar-context")
-	)
-
-	const pompey = new HistoricalFigureAgent(
-		"Pompey Magnus",
-		"You are Pompey, once Caesar's ally, now aligned with the Senate. You want order, legality, and your own prestige preserved.",
-		environment,
-		ModelContext.create("pompey-context")
-	)
-
-	const cato = new HistoricalFigureAgent(
-		"Cato the Younger",
-		"You are Cato, a strict defender of the Roman Republic. You see Caesar as a threat to liberty and law.",
-		environment,
-		ModelContext.create("cato-context")
-	)
-
-	human.join(environment)
-	observer.join(environment)
-	caesar.join(environment)
-	pompey.join(environment)
-	cato.join(environment)
-
-	sendMessage(
-		environment,
-		`
+sendMessage(
+	`
   Historical scenario:
   It is 49 BCE. Caesar has been ordered to disband his army before returning to Rome.
   The Senate fears he will become a tyrant. Caesar fears prosecution and humiliation.
@@ -52,8 +20,5 @@ async function main() {
   Begin the simulation:
   Each character should argue what Rome should do next.
   `,
-	human,
-	)
-}
-
-main().catch(console.error)
+	narrator.getId(),
+)
