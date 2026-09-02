@@ -8,7 +8,7 @@ import {
 	SituationProcessor,
 	SituationSpecification,
 } from "@mozaik-ai/core"
-import { resolveParticipant, runLoop } from "./runtime"
+import { leave, resolveParticipant, resolveRuntime, runLoop } from "./runtime"
 
 const MODEL = "gpt-5.4"
 
@@ -20,9 +20,28 @@ function inferenceInput(agent: Agent): InferenceInput {
 	}
 }
 
+function startAgentTurn(agent: Agent, message: string): void {
+	if (!resolveRuntime().state.conversation.startTurn()) {
+		return
+	}
+
+	runLoop(agent.getId(), message, inferenceInput(agent))
+}
+
+function closeConversation(): void {
+	const { conversation } = resolveRuntime().state
+	console.log(`\nConversation closed after ${conversation.getMaxTurns()} turns.`)
+
+	for (const participant of resolveRuntime().state.getParticipants()) {
+		if (participant.getManifest().role === "agent") {
+			leave(participant)
+		}
+	}
+}
+
 export class MessageSentSpecification extends SituationSpecification {
 	isSatisfiedBy(context: SituationContext): boolean {
-		return context.event.type === "message.sent"
+		return context.event.type === "message.sent" && resolveRuntime().state.conversation.canStartTurn()
 	}
 }
 
@@ -31,13 +50,21 @@ export class DebateInferenceProcessor implements SituationProcessor {
 		const agent = context.participant as Agent
 		const { message } = context.event.payload as { message: string }
 
-		runLoop(agent.getId(), message, inferenceInput(agent))
+		startAgentTurn(agent, message)
 	}
 }
 
 export class OtherFigureAnsweredSpecification extends SituationSpecification {
 	isSatisfiedBy(context: SituationContext): boolean {
-		return context.event.type === "model.answer" && context.event.producerId !== context.participant.getId()
+		if (context.event.type !== "model.answer") {
+			return false
+		}
+
+		if (context.event.producerId === context.participant.getId()) {
+			return false
+		}
+
+		return resolveRuntime().state.conversation.canStartTurn()
 	}
 }
 
@@ -47,7 +74,7 @@ export class ReactToOtherFigureProcessor implements SituationProcessor {
 		const { answer } = context.event.payload as { answer: ModelMessageItem }
 		const speaker = resolveParticipant(context.event.producerId).getManifest().name
 
-		runLoop(agent.getId(), `${speaker} said: ${answer.content.text}`, inferenceInput(agent))
+		startAgentTurn(agent, `${speaker} said: ${answer.content.text}`)
 	}
 }
 
@@ -61,9 +88,15 @@ export class RecordOwnAnswerProcessor implements SituationProcessor {
 	apply(context: SituationContext): void {
 		const agent = context.participant as Agent
 		const { answer } = context.event.payload as { answer: ModelMessageItem }
+		const conversation = resolveRuntime().state.conversation
+		const turn = conversation.endTurn()
 
 		agent.getMemory().getContext().addItem(answer)
-		console.log(`\n${agent.getManifest().name}: ${answer.content.text}`)
+		console.log(`\n${agent.getManifest().name} [${turn}/${conversation.getMaxTurns()}]: ${answer.content.text}`)
+
+		if (conversation.isComplete()) {
+			closeConversation()
+		}
 	}
 }
 

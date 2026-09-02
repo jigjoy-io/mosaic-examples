@@ -1,9 +1,9 @@
 import "dotenv/config"
 import { caesar, cato, pompey } from "./agent"
-import { EnvironmentState, initializeRuntime, join, sendMessage } from "./runtime"
+import { Conversation, EnvironmentState, initializeRuntime, join, sendMessage } from "./runtime"
 import { narrator, observer } from "./user"
 
-initializeRuntime({ state: new EnvironmentState() })
+initializeRuntime({ state: new EnvironmentState(Conversation.init(5)) })
 
 join(narrator)
 join(observer)

@@ -1,7 +1,7 @@
 {
 	"name": "inference-interception",
 	"version": "1.0.0",
-	"description": "Two streaming agents plus an observer; a safety reviewer intercepts the planner's stream in real time",
+	"description": "Streaming planner with an InterceptionHandler that blocks risky model_message transitions and loops back for a safer plan",
 	"type": "module",
 	"private": true,
 	"scripts": {
@@ -10,7 +10,7 @@
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
-		"@mozaik-ai/core": "^4.0.0-beta.5",
+		"@mozaik-ai/core": "^4.0.0-beta.11",
 		"dotenv": "^17.4.2"
 	},
 	"devDependencies": {

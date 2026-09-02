@@ -7,7 +7,7 @@ Each example is a **self-contained mini project** with its own `package.json` an
 The examples:
 
 - `terminal-agent/` — a terminal-capable agent that can run shell commands and use the results to complete tasks
-- `inference-interception/` — two streaming agents plus an observer; a safety reviewer intercepts the planner's stream in real time
+- `inference-interception/` — streaming planner plus observer; an `InterceptionHandler` on `runLoop` blocks risky answers and requests a safer plan
 - `history-simulation/` — multiple historical-figure agents debating in a shared environment with a transcript observer
 - `wrong-asnwer/` — a reactive agent with a tool, logging the transcript while answering a simple question
 

@@ -42,6 +42,21 @@ export class ModelAnswerRenderer implements SituationProcessor {
 	}
 }
 
+export class InterceptionEventSpecification extends SituationSpecification {
+	isSatisfiedBy(context: SituationContext): boolean {
+		return context.event.type === "interception.started" || context.event.type === "interception.finished"
+	}
+}
+
+export class InterceptionEventRenderer implements SituationProcessor {
+	apply(context: SituationContext): void {
+		const transition = context.event.payload as { nextStateId?: string }
+		const source = resolveParticipant(context.event.producerId).getManifest().name
+
+		console.log("[interception]", source, context.event.type, transition.nextStateId ?? "")
+	}
+}
+
 const streamHandler: SituationHandler = {
 	specification: new InferenceStreamSpecification(),
 	processor: new StreamEventRenderer(),
@@ -52,8 +67,13 @@ const answerHandler: SituationHandler = {
 	processor: new ModelAnswerRenderer(),
 }
 
+const interceptionHandler: SituationHandler = {
+	specification: new InterceptionEventSpecification(),
+	processor: new InterceptionEventRenderer(),
+}
+
 export const observer = createHuman({
 	name: "Runtime Observer",
 	capabilities: [],
-	handlers: [streamHandler, answerHandler],
+	handlers: [streamHandler, answerHandler, interceptionHandler],
 })

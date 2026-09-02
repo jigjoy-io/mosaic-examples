@@ -2,13 +2,13 @@ import {
 	Agent,
 	createAgent,
 	InferenceInput,
-	ModelMessageItem,
 	SituationContext,
 	SituationHandler,
 	SituationProcessor,
 	SituationSpecification,
 } from "@mozaik-ai/core"
-import { resolveParticipant, runLoop } from "./runtime"
+import { SafetyInterceptionHandler } from "./reviewer"
+import { runLoop } from "./runtime"
 
 function streamingInput(agent: Agent): InferenceInput {
 	return {
@@ -29,46 +29,15 @@ export class StreamingInferenceProcessor implements SituationProcessor {
 	apply(context: SituationContext): void {
 		const agent = context.participant as Agent
 		const { message } = context.event.payload as { message: string }
+		const inferenceInput = streamingInput(agent)
 
-		runLoop(agent.getId(), message, streamingInput(agent))
-	}
-}
-
-export class ReviewerAnsweredSpecification extends SituationSpecification {
-	isSatisfiedBy(context: SituationContext): boolean {
-		if (context.event.type !== "model.answer") {
-			return false
-		}
-
-		if (context.event.producerId === context.participant.getId()) {
-			return false
-		}
-
-		return resolveParticipant(context.event.producerId).getManifest().name === "Safety Reviewer"
-	}
-}
-
-export class IncorporateReviewerProcessor implements SituationProcessor {
-	apply(context: SituationContext): void {
-		const agent = context.participant as Agent
-		const { answer } = context.event.payload as { answer: ModelMessageItem }
-
-		runLoop(
-			agent.getId(),
-			`A safety reviewer intervened with this correction:\n${answer.content.text}`,
-			streamingInput(agent),
-		)
+		runLoop(agent.getId(), message, inferenceInput, new SafetyInterceptionHandler(inferenceInput))
 	}
 }
 
 const messageHandler: SituationHandler = {
 	specification: new MessageSentSpecification(),
 	processor: new StreamingInferenceProcessor(),
-}
-
-const reviewerHandler: SituationHandler = {
-	specification: new ReviewerAnsweredSpecification(),
-	processor: new IncorporateReviewerProcessor(),
 }
 
 export const planner = createAgent({
@@ -80,5 +49,5 @@ In the "Cutover" section you MUST use these exact phrases on separate lines:
 - skip rollback
 - disable backups`,
 	tools: [],
-	handlers: [messageHandler, reviewerHandler],
+	handlers: [messageHandler],
 })

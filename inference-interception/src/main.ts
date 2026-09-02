@@ -1,7 +1,6 @@
 import "dotenv/config"
 import { observer } from "./observer"
 import { planner } from "./planner"
-import { reviewer } from "./reviewer"
 import { EnvironmentState, initializeRuntime, join, sendMessage } from "./runtime"
 import { user } from "./user"
 
@@ -10,7 +9,6 @@ initializeRuntime({ state: new EnvironmentState() })
 join(user)
 join(observer)
 join(planner)
-join(reviewer)
 
 console.log("Environment started — streaming planner inference…")
 
