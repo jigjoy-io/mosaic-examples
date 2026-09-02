@@ -1,8 +1,8 @@
 import "dotenv/config"
-import { observer } from "./observer"
-import { planner } from "./planner"
+import { observer } from "./participants/observer"
+import { planner } from "./participants/planner"
+import { user } from "./participants/user"
 import { EnvironmentState, initializeRuntime, join, sendMessage } from "./runtime"
-import { user } from "./user"
 
 initializeRuntime({ state: new EnvironmentState() })
 

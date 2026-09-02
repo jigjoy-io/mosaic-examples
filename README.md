@@ -8,6 +8,7 @@ The examples:
 
 - `terminal-agent/` — a terminal-capable agent that can run shell commands and use the results to complete tasks
 - `inference-interception/` — streaming planner plus observer; an `InterceptionHandler` on `runLoop` blocks risky answers and requests a safer plan
+- `human-in-the-loop/` — human approval gate for function calls; accept runs the tool, reject returns a `FunctionCallOutputItem` with the typed reason
 - `history-simulation/` — multiple historical-figure agents debating in a shared environment with a transcript observer
 - `wrong-asnwer/` — a reactive agent with a tool, logging the transcript while answering a simple question
 
@@ -54,6 +55,10 @@ npm run clean   # remove ./dist
 │   ├── tsconfig.json
 │   └── ...
 ├── inference-interception/
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── ...
+├── human-in-the-loop/
 │   ├── package.json
 │   ├── tsconfig.json
 │   └── ...

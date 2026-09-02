@@ -55,6 +55,7 @@ Each run produces different dialogue. Agents continue to react to one another un
 
 | File | Role |
 |------|------|
-| `main.ts` | Wires the environment, models, human narrator, observer, and three historical agents |
-| `historical-figure-agent.ts` | `HistoricalFigureAgent` — role-prompted agent that reacts to messages and other participants |
-| `transcript-observer.ts` | Logs narrator messages to the console |
+| `src/main.ts` | Wires the environment, models, human narrator, observer, and three historical agents |
+| `src/participants/historical-figure/index.ts` | Caesar, Pompey, and Cato agents |
+| `src/participants/narrator/index.ts` | Scene-setting narrator |
+| `src/participants/observer/index.ts` | Logs narrator messages to the console |

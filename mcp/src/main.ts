@@ -1,9 +1,9 @@
 import "dotenv/config"
 import { McpToolRegistry } from "@mozaik-ai/core"
-import { createMcpAgent } from "./agent"
+import { createMcpAgent } from "./participants/agent"
 import { EnvironmentState, initializeRuntime, join, sendMessage } from "./runtime"
 import { startMarketMcpServer } from "./server"
-import { user, whenAnswered } from "./user"
+import { user, whenAnswered } from "./participants/user"
 
 async function main() {
 	const server = await startMarketMcpServer()

@@ -19,6 +19,7 @@ export class MockInferenceRunner implements InferenceRunner {
 
 		return {
 			items: [ModelMessageItem.rehydrate({ text })],
+			tokenUsage: undefined,
 			rowResponse: { mock: true, model: input.model },
 		}
 	}

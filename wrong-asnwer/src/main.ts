@@ -1,7 +1,8 @@
 import "dotenv/config"
-import { agent } from "./agent"
+import { agent } from "./participants/agent"
+import { logger } from "./participants/logger"
 import { EnvironmentState, initializeRuntime, join, sendMessage } from "./runtime"
-import { logger, user } from "./user"
+import { user } from "./participants/user"
 
 initializeRuntime({ state: new EnvironmentState() })
 

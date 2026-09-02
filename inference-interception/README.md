@@ -6,7 +6,7 @@ Demonstrates `runLoop`'s optional `InterceptionHandler`: the planner streams a m
 - **SafetyInterceptionHandler** — `isSatisfiedBy` / `handle` on loop transitions
 - **Runtime Observer** — logs stream events, interception events, and completed model messages
 
-Requires `@mozaik-ai/core` **4.0.0-beta.11+**.
+Requires `@mozaik-ai/core` **4.0.0-beta.12+**.
 
 ## Example output
 
@@ -29,7 +29,11 @@ Watch the console for `[event]` lines (streaming deltas), `[reviewer] risky outp
 | File | Role |
 |------|------|
 | `src/main.ts` | Wires runtime, participants, and the initial prompt |
-| `src/planner.ts` | Planner agent; passes `InterceptionHandler` into `runLoop` |
-| `src/reviewer.ts` | `SafetyInterceptionHandler` for risky `model_message` transitions |
-| `src/observer.ts` | Logs stream, interception, and model-answer events |
-| `src/user.ts` | Operator who sends the migration prompt |
+| `src/participants/planner/index.ts` | Planner agent; passes `InterceptionHandler` into `runLoop` |
+| `src/participants/planner/situations/message-sent.ts` | Starts streaming `runLoop` on `message.sent` |
+| `src/participants/planner/interception/safety.ts` | `SafetyInterceptionHandler` for risky `model_message` transitions |
+| `src/participants/observer/index.ts` | Logs stream, interception, and model-answer events |
+| `src/participants/observer/situations/inference-stream.ts` | Renders `inference.stream` events |
+| `src/participants/observer/situations/model-answer.ts` | Renders completed `model.answer` events |
+| `src/participants/observer/situations/interception-event.ts` | Renders interception started/finished events |
+| `src/participants/user/index.ts` | Operator who sends the migration prompt |

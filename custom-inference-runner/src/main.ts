@@ -1,9 +1,9 @@
 import "dotenv/config"
 import { OpenAIChatCompletions } from "@mozaik-ai/core"
-import { agent } from "./agent"
+import { agent } from "./participants/agent"
 import { EnvironmentState, initializeRuntime, join, sendMessage } from "./runtime"
 import { MockInferenceRunner } from "./runner"
-import { user } from "./user"
+import { user } from "./participants/user"
 
 initializeRuntime({
 	state: new EnvironmentState(),
