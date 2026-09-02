@@ -1,12 +1,4 @@
-import {
-	InferenceInput,
-	type ExecutableLoopStateId,
-	type InterceptionHandler,
-	type LoopTransition,
-	ModelMessageItem,
-} from "@mozaik-ai/core"
-
-type ExecutableTransition = LoopTransition<ExecutableLoopStateId>
+import { InferenceInput, InterceptionHandler, ModelMessageItem, ExecutableTransition } from "@mozaik-ai/core"
 
 export class SafetyInterceptionHandler implements InterceptionHandler {
 	private intercepted = false

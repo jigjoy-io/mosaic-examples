@@ -6,7 +6,7 @@ Demonstrates `runLoop`'s optional `InterceptionHandler`: the planner streams a m
 - **SafetyInterceptionHandler** — `isSatisfiedBy` / `handle` on loop transitions
 - **Runtime Observer** — logs stream events, interception events, and completed model messages
 
-Requires `@mozaik-ai/core` **4.0.0-beta.12+**.
+Requires `@mozaik-ai/core` **4.0.0+**.
 
 ## Example output
 

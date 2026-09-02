@@ -1,14 +1,11 @@
 import {
+	ExecutableTransition,
 	FunctionCallItem,
 	FunctionCallOutputItem,
-	type ExecutableLoopStateId,
 	type InferenceInput,
 	type InterceptionHandler,
-	type LoopTransition,
 } from "@mozaik-ai/core"
 import { createInterface } from "node:readline/promises"
-
-type ExecutableTransition = LoopTransition<ExecutableLoopStateId>
 
 export const APPROVAL_THRESHOLD_USD = 50
 

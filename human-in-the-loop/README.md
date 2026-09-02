@@ -8,7 +8,7 @@ Three participants share one runtime. A generator queues payments, a transfer ag
 
 So in this run, `$25` and `$40` execute without a prompt. `$80` pauses in the console: type `y` to send it, or `n` plus a reason (for example `limit exceeded`) to skip the tool and send that reason back to the model.
 
-Requires `@mozaik-ai/core` **4.0.0-beta.12+**.
+Requires `@mozaik-ai/core` **4.0.0+**.
 
 ## Run
 
