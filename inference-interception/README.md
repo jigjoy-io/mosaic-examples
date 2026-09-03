@@ -1,6 +1,6 @@
 # Inference Interception
 
-Demonstrates `runLoop`'s optional `InterceptionHandler`: the planner streams a migration plan, and a safety handler intercepts the `model_message` transition when risky cutover phrases appear. Instead of publishing that answer, the loop is rewritten to `context_update` with a correction, then inference runs again.
+Demonstrates `runLoop`'s optional `InterceptionHandler`: the planner streams a migration plan, and a safety handler intercepts the `model_message` transition when risky cutover phrases appear. Instead of publishing that answer, the loop is rewritten to `message_received` with a correction, then inference runs again.
 
 - **Planner** — streaming `runLoop` with `SafetyInterceptionHandler`
 - **SafetyInterceptionHandler** — `isSatisfiedBy` / `handle` on loop transitions

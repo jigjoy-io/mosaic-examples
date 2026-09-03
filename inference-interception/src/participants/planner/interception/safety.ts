@@ -18,7 +18,7 @@ export class SafetyInterceptionHandler implements InterceptionHandler {
 		console.log("[reviewer] risky output intercepted — looping back with a safety correction")
 
 		return {
-			nextStateId: "context_update",
+			nextStateId: "message_received",
 			input: {
 				content: `
           A safety interceptor blocked the previous plan because it used a big-bang cutover.
