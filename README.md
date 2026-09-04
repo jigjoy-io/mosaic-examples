@@ -1,16 +1,19 @@
 # Mozaik Examples
 
-This repository contains small, runnable TypeScript examples built with [`@mozaik-ai/core`](https://www.npmjs.com/package/@mozaik-ai/core).
+Small, self-contained TypeScript projects that show how to build agents with [`@mozaik-ai/core`](https://www.npmjs.com/package/@mozaik-ai/core).
 
-Each example is a **self-contained mini project** with its own `package.json` and `tsconfig.json`. Install and run them independently.
-
-The examples:
-
-- `terminal-agent/` — a terminal-capable agent that can run shell commands and use the results to complete tasks
-- `inference-interception/` — streaming planner plus observer; an `InterceptionHandler` on `runLoop` blocks risky answers and requests a safer plan
-- `human-in-the-loop/` — human approval gate for function calls; accept runs the tool, reject returns a `FunctionCallOutputItem` with the typed reason
-- `history-simulation/` — multiple historical-figure agents debating in a shared environment with a transcript observer
-- `wrong-asnwer/` — a reactive agent with a tool, logging the transcript while answering a simple question
+- `terminal-agent/` — An agent that runs shell commands and uses the output to inspect and change a local directory.
+- `inference-interception/` — A streaming planner whose loop is intercepted when a risky plan appears, then asked for a safer one.
+- `human-in-the-loop/` — Generated payments run on their own unless the amount is large, in which case you approve or reject the transfer in the console.
+- `history-simulation/` — Caesar, Pompey, and Cato debate Rome's fate in a shared runtime while an observer logs the transcript.
+- `wrong-asnwer/` — An agent answers a trivia question with a tool that returns a fake capital, while a logger prints the transcript.
+- `streaming/` — An agent streams a book recommendation to the console token by token.
+- `tool-calling/` — An agent looks up a stock quote through a function tool and answers with the result.
+- `structured-output/` — An agent returns an investment brief that matches a strict JSON schema.
+- `shared-state/` — An agent answers from a shared freemium account that stops after a fixed number of tries.
+- `reasoning-effort/` — An agent walks through a finance trade-off with high reasoning effort enabled.
+- `custom-inference-runner/` — The same agent loop, but inference is a mock runner that never calls a model provider.
+- `mcp/` — An agent discovers tools from a local MCP server and uses them to answer a stock-price question.
 
 ## Prerequisites
 
@@ -19,7 +22,7 @@ The examples:
 
 ## Running an example
 
-Each example follows the same workflow. From inside the example's folder:
+From inside the example's folder:
 
 ```bash
 cd terminal-agent      # or any other example folder
@@ -37,45 +40,3 @@ Then run it:
 ```bash
 npm start
 ```
-
-Each project also exposes:
-
-```bash
-npm run build   # compile TypeScript to ./dist
-npm run watch   # compile in watch mode
-npm run clean   # remove ./dist
-```
-
-## Repository structure
-
-```text
-.
-├── terminal-agent/
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── ...
-├── inference-interception/
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── ...
-├── human-in-the-loop/
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── ...
-├── history-simulation/
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── ...
-├── wrong-asnwer/
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── ...
-├── purpose.md
-└── README.md
-```
-
-## Notes
-
-- This repository is primarily an examples and experimentation workspace.
-- Each example installs its own dependencies, so there is no shared root `package.json`.
-- The terminal agent can run arbitrary shell commands, so use it carefully in trusted environments.
