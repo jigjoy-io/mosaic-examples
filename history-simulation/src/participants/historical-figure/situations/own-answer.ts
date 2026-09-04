@@ -22,7 +22,7 @@ export class RecordOwnAnswerProcessor implements SituationProcessor {
 		const conversation = resolveRuntime().state.conversation
 		const turn = conversation.endTurn()
 
-		agent.getMemory().getContext().addItem(answer)
+		agent.getMemory().getContext().addContextItem(answer)
 		console.log(`\n${agent.getManifest().name} [${turn}/${conversation.getMaxTurns()}]: ${answer.content.text}`)
 
 		if (conversation.isComplete()) {
